@@ -5,14 +5,16 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+import os
+import subprocess
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
 
 def main():
-    """Shows basic usage of the Google Calendar API.
-    Prints the start and name of the next 10 events on the user's calendar.
+    """
+    Prints conflicts.
     """
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
@@ -45,7 +47,7 @@ def main():
     iso_end = day_after.isoformat() + "Z"
 
 
-    print('Checking tomorrows events')
+    print('Checking tomorrows events...\n')
 
     events_result = service.events().list(calendarId='primary', timeMin=iso_start,
                                         timeMax=iso_end, singleEvents=True,
@@ -62,7 +64,7 @@ def main():
         tup = (name, (start, end))
         all.append(tup)
 
-    res = []
+    conflicts = ["Conflicts for tomorrow: \n\n", ]
     i=0
     for element in all:
         start_time = element[1][0]
@@ -84,9 +86,29 @@ def main():
                     conflict = (start_time, other_end)
                 else:
                     conflict = (start_time, end_time)
-                print("Conflict: " + name + " and "+ other_name + "share a conflict")
+                line = name + " and " + other_name + " share a conflict\n" \
 
+                conflicts.append(line)
 
+    msg = "".join(conflicts)
+
+    if len(conflicts) > 1:
+        print(msg)
+        scpt = "/Users/Jacqueline/PycharmProjects/calendar/sendMessage.scpt"
+        args = ["+13058505472", msg]
+
+        p = subprocess.Popen(
+            ['/usr/bin/osascript', scpt] + [str(arg) for arg in args],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        stdout, stderr = p.communicate()
+
+        if p.returncode:
+            print('ERROR:', stderr)
+        else:
+            print(stdout)
+    else:
+        print("No conflicts for tomorrow")
 
 
 
