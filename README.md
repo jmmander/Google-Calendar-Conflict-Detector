@@ -115,8 +115,9 @@ pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-
 > cd Users/Me/CalApp/
 > python cal.py 
 ```
-	1. This should open a browser window and prompt you to authorize the app to access your google calendar. Ensure you select the google account that your calendar is associated with. 
-	2. You will also get a pop up authorising the cron job. Accept this to automatcally run the script hourly and check your calendar for conflicts.
+9. This should open a browser window and prompt you to authorize the app to access your google calendar. Ensure you select the google account that your calendar is associated with. 
+
+10. You will also get a pop up authorising the cron job. Accept this to automatcally run the script hourly and check your calendar for conflicts.
 
 
 
