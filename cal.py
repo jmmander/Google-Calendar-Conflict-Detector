@@ -9,7 +9,7 @@ import subprocess
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-
+phoneno = "<YOUR NUMBER HERE (INCLUDING + AND COUNTRYCODE)>"
 
 def main():
     """
@@ -96,7 +96,7 @@ def main():
     if len(conflicts) > 1:
         print(msg)
         scpt = "sendMessage.scpt"
-        args = ["+13058505472", msg]
+        args = [phoneno, msg]
 
         p = subprocess.Popen(
            ['/usr/bin/osascript', scpt] + [str(arg) for arg in args],
