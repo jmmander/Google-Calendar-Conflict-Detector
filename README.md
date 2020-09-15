@@ -66,7 +66,9 @@
 
 
 <!-- GETTING STARTED -->
-## COMPATIBILITY
+## Getting Started
+
+### Compatibility
 
 At this time the Conflict Detector is only compatible with iOS.
 
@@ -99,7 +101,7 @@ phoneno = "+15555555555"
 > cd Users/Me/CalApp/
 > python cal.py 
 ```
-6. Update cronjob
+6. Update the file location in the schedule.sh file. This should point to the folder that holds cal.py.
 
 
 <!-- USAGE EXAMPLES -->
