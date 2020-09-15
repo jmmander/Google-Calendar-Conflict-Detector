@@ -76,9 +76,14 @@ At this time the Conflict Detector is only compatible with iOS.
 ### Prerequisites
 
 -Python 2
+
 -An iCloud account
+
 -Access to iMessage
+
 -A Google account and calendar
+
+- Pip
 
 ### Installation
 
@@ -86,38 +91,34 @@ At this time the Conflict Detector is only compatible with iOS.
 ```sh
 git clone https://github.com/jmmander/Google-Calendar-Conflict-Detector.git
 ```
-2. Install Python if you don't have it already
-```sh
-yum install python
-```
-3. Open `cal.py` and update the *phoneno* variable to the phone number associated with your iMessage account. It should be in the following format:
+2. Open `cal.py` and update the *phoneno* variable to the phone number associated with your iMessage account. It should be in the following format:
 ```sh
 phoneno = "+15555555555" 
 ```
-4. Open `schedule.sh` and update the *fileLocation* variable. This should point to the folder that currently holds `cal.py` and `schedule.sh`. The full path is required.
+3. Open `schedule.sh` and update the *fileLocation* variable. This should point to the folder that currently holds `cal.py` and `schedule.sh`. The full path is required.
 ```sh
 fileLocation = /Users/My/Cal/Directory/
 ```
-6. Go to https://developers.google.com/calendar/quickstart/python and turn on the Google Calendar API:
+4. Go to https://developers.google.com/calendar/quickstart/python and turn on the Google Calendar API:
 	1. Follow the instructions in Step 1: Turn on the Google Calendar API. 
 	2. Click *Enable Google Calendar API*
 	3. You may name the project whatever you wish. 
 	4. Select *Desktop App* under Configure Your OAuth Client and click *Create*. 
 	5. Click *Download Client Configuration* and save the file `credentials.json` in the same folder as `cal.py`
 
-7. Install the Google Client Library as per step 2 in the Google Calendar API documentation:
+5. Install the Google Client Library as per step 2 in the Google Calendar API documentation:
 ```
 pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 
-8. Go to the directory that holds cal.py. Run cal.py: 
+6. Go to the directory that holds cal.py. Run cal.py: 
 ```sh
 > cd Users/Me/CalApp/
 > python cal.py 
 ```
-9. This should open a browser window and prompt you to authorize the app to access your google calendar. Ensure you select the google account that your calendar is associated with. 
+7. This should open a browser window and prompt you to authorize the app to access your google calendar. Ensure you select the google account that your calendar is associated with. 
 
-10. You will also get a pop up authorising the cron job. Accept this to automatcally run the script hourly and check your calendar for conflicts.
+8. You will also get a pop up authorising the cron job. Accept this to automatcally run the script hourly and check your calendar for conflicts.
 
 
 
