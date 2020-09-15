@@ -92,7 +92,7 @@ def main():
 
     msg = "".join(conflicts)
 
-
+##send imessage
     if len(conflicts) > 1:
         print(msg)
         scpt = "sendMessage.scpt"
@@ -109,7 +109,7 @@ def main():
         else:
             print(stdout)
 
-
+##create notification
         script = "notification.scpt"
 
         p = subprocess.Popen(
@@ -125,6 +125,19 @@ def main():
 
     else:
         print("No conflicts for tomorrow")
+
+##create cronjob
+    p = subprocess.Popen(
+        ['sh', 'schedule.sh'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    stdout, stderr = p.communicate()
+
+    if p.returncode:
+        print('ERROR:', stderr)
+    else:
+        print(stdout)
+
 
 
 
