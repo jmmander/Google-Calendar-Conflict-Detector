@@ -37,78 +37,94 @@ def main():
 
     service = build('calendar', 'v3', credentials=creds)
 
-    if creds:
-        #now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
 
-        tomorrow = datetime.datetime.today() + datetime.timedelta(days=1)
-        tomorrow = tomorrow.replace(hour=0, minute=0, second=0)
-        day_after = tomorrow + datetime.timedelta(days=1)
-        iso_start = tomorrow.isoformat() + "Z"
-        iso_end = day_after.isoformat() + "Z"
+    #now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+
+    tomorrow = datetime.datetime.today() + datetime.timedelta(days=1)
+    tomorrow = tomorrow.replace(hour=0, minute=0, second=0)
+    day_after = tomorrow + datetime.timedelta(days=1)
+    iso_start = tomorrow.isoformat() + "Z"
+    iso_end = day_after.isoformat() + "Z"
 
 
-        print('Checking tomorrows events...\n')
+    print('Checking tomorrows events...\n')
 
-        events_result = service.events().list(calendarId='primary', timeMin=iso_start,
-                                            timeMax=iso_end, singleEvents=True,
-                                            orderBy='startTime').execute()
+    events_result = service.events().list(calendarId='primary', timeMin=iso_start,
+                                        timeMax=iso_end, singleEvents=True,
+                                        orderBy='startTime').execute()
 
-        events = events_result.get('items', [])
-        all = []
-        if not events:
-            print('No upcoming events found.')
-        for event in events:
-            start = event['start'].get('dateTime', event['start'].get('date'))
-            name = event['summary']
-            end = event['end'].get('dateTime', event['end'].get('date'))
-            tup = (name, (start, end))
-            all.append(tup)
+    events = events_result.get('items', [])
+    all = []
+    if not events:
+        print('No upcoming events found.')
+    for event in events:
+        start = event['start'].get('dateTime', event['start'].get('date'))
+        name = event['summary']
+        end = event['end'].get('dateTime', event['end'].get('date'))
+        tup = (name, (start, end))
+        all.append(tup)
 
-        conflicts = ["Conflicts for tomorrow: \n\n", ]
-        i=0
-        for element in all:
-            start_time = element[1][0]
-            end_time = element[1][1]
-            name = element[0]
-            i=i+1
-            for other_event in all[i:]:
-                other_start = other_event[1][0]
-                other_end = other_event[1][1]
-                other_name = other_event[0]
-                if end_time <= other_start and start_time <= other_end:
-                    pass
-                else:
-                    if start_time <= other_start and end_time >= other_end:
-                        conflict = (other_start,other_end)
-                    elif start_time <= other_start and end_time <= other_end:
-                        conflict = (other_start, end_time)
-                    elif start_time >= other_start and end_time >= other_end:
-                        conflict = (start_time, other_end)
-                    else:
-                        conflict = (start_time, end_time)
-                    line = name + " and " + other_name + " share a conflict\n" \
-
-                    conflicts.append(line)
-
-        msg = "".join(conflicts)
-
-        if len(conflicts) > 1:
-            print(msg)
-            scpt = "sendMessage.scpt"
-            args = ["+13058505472", msg]
-
-            p = subprocess.Popen(
-                ['/usr/bin/osascript', scpt] + [str(arg) for arg in args],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-            stdout, stderr = p.communicate()
-
-            if p.returncode:
-                print('ERROR:', stderr)
+    conflicts = ["Conflicts for tomorrow: \n\n", ]
+    i=0
+    for element in all:
+        start_time = element[1][0]
+        end_time = element[1][1]
+        name = element[0]
+        i=i+1
+        for other_event in all[i:]:
+            other_start = other_event[1][0]
+            other_end = other_event[1][1]
+            other_name = other_event[0]
+            if end_time <= other_start and start_time <= other_end:
+                pass
             else:
-                print(stdout)
+                if start_time <= other_start and end_time >= other_end:
+                    conflict = (other_start,other_end)
+                elif start_time <= other_start and end_time <= other_end:
+                    conflict = (other_start, end_time)
+                elif start_time >= other_start and end_time >= other_end:
+                    conflict = (start_time, other_end)
+                else:
+                    conflict = (start_time, end_time)
+                line = name + " and " + other_name + " share a conflict\n"
+
+                conflicts.append(line)
+
+    msg = "".join(conflicts)
+
+
+    if len(conflicts) > 1:
+        print(msg)
+        scpt = "sendMessage.scpt"
+        args = ["+13058505472", msg]
+
+        p = subprocess.Popen(
+           ['/usr/bin/osascript', scpt] + [str(arg) for arg in args],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        stdout, stderr = p.communicate()
+
+        if p.returncode:
+            print('ERROR:', stderr)
         else:
-            print("No conflicts for tomorrow")
+            print(stdout)
+
+
+        script = "notification.scpt"
+
+        p = subprocess.Popen(
+            ['/usr/bin/osascript', script],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        stdout, stderr = p.communicate()
+
+        if p.returncode:
+            print('ERROR:', stderr)
+        else:
+            print(stdout)
+
+    else:
+        print("No conflicts for tomorrow")
 
 
 
