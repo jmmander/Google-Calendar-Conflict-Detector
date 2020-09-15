@@ -94,12 +94,12 @@ yum install python
 ```sh
 phoneno = "+15555555555" 
 ```
-4. Open schedule.sh and update the *fileLocation* variable. This should point to the folder that currently holds `cal.py` and `schedule.sh`. The full path is required.
+4. Open `schedule.sh` and update the *fileLocation* variable. This should point to the folder that currently holds `cal.py` and `schedule.sh`. The full path is required.
 ```sh
 fileLocation = /Users/My/Cal/Directory/
 ```
 6. Go to https://developers.google.com/calendar/quickstart/python and turn on the Google Calendar API:
-	1.  Follow the instructions in Step 1: Turn on the Google Calendar API. 
+	1. Follow the instructions in Step 1: Turn on the Google Calendar API. 
 	2. Click *Enable Google Calendar API*
 	3. You may name the project whatever you wish. 
 	4. Select *Desktop App* under Configure Your OAuth Client and click *Create*. 
@@ -110,12 +110,13 @@ fileLocation = /Users/My/Cal/Directory/
 pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
 
-8. Go to the directory that holds cal.py. Run cal.py, this should open a browser window and prompt you to authorize the app to access your google calendar. Ensure you select the google account that your calendar is associated with.
+8. Go to the directory that holds cal.py. Run cal.py: 
 ```sh
 > cd Users/Me/CalApp/
 > python cal.py 
 ```
-This will also create a cron job that runs hourly and checks your calendar for conflicts.
+	1. This should open a browser window and prompt you to authorize the app to access your google calendar. Ensure you select the google account that your calendar is associated with. 
+	2. You will also get a pop up authorising the cron job. Accept this to automatcally run the script hourly and check your calendar for conflicts.
 
 
 
