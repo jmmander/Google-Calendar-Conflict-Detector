@@ -1,4 +1,5 @@
 
+
 <!-- PROJECT SHIELDS -->
 <!--
 *** I'm using markdown "reference style" links for readability.
@@ -71,17 +72,17 @@
 
 ### Compatibility
 
-At this time the Conflict Detector is only compatible with iOS.
+At this time the Conflict Detector is only compatible with Mac OS.
 
 ### Prerequisites
 
--Python 2
+- Python 2
 
--An iCloud account
+- An iCloud account
 
--Access to iMessage
+- iMessage account
 
--A Google account and calendar
+- A Google account and calendar
 
 - Pip
 
@@ -91,34 +92,33 @@ At this time the Conflict Detector is only compatible with iOS.
 ```sh
 git clone https://github.com/jmmander/Google-Calendar-Conflict-Detector.git
 ```
-2. Open `cal.py` and update the *phoneno* variable to the phone number associated with your iMessage account. It should be in the following format:
-```sh
-phoneno = "+15555555555" 
-```
-3. Open `schedule.sh` and update the *fileLocation* variable. This should point to the folder that currently holds `cal.py` and `schedule.sh`. The full path is required.
-```sh
-fileLocation = /Users/My/Cal/Directory/
-```
-4. Go to https://developers.google.com/calendar/quickstart/python and turn on the Google Calendar API:
+
+2. Go to https://developers.google.com/calendar/quickstart/python and turn on the Google Calendar API:
 	1. Follow the instructions in Step 1: Turn on the Google Calendar API. 
 	2. Click *Enable Google Calendar API*
 	3. You may name the project whatever you wish. 
 	4. Select *Desktop App* under Configure Your OAuth Client and click *Create*. 
 	5. Click *Download Client Configuration* and save the file `credentials.json` in the same folder as `cal.py`
 
-5. Install the Google Client Library as per step 2 in the Google Calendar API documentation:
+3. Install the Google Client Library as per step 2 in the Google Calendar API documentation:
 ```
 pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
 ```
-
-6. Go to the directory that holds cal.py. Run cal.py: 
+4. Open the terminal and run cal.py
 ```sh
-> cd Users/Me/CalApp/
-> python cal.py 
+python cal.py
 ```
-7. This should open a browser window and prompt you to authorize the app to access your google calendar. Ensure you select the google account that your calendar is associated with. 
+5. Answer the questions in the terminal when prompted
+```sh
+Would you like an iMessage notication? (y/n)   n
+```
 
-8. You will also get a pop up authorising the cron job. Accept this to automatcally run the script hourly and check your calendar for conflicts.
+6. Once answered a browser window should open and prompt you to authorize access to your google calendar. Ensure you select the google account that your calendar is associated with. 
+[![Google Account Screen Shot]](https://ibb.co/5MVsnHM)
+
+8. If you are monitoring more than one google calendar (as indicated in the first question) more browser windows will open. Authorize these in the same way.
+
+9. You will also get a pop up in MacOs authorizing the cron job. Accept this to automatically run the script hourly and check your calendar for conflicts.
 
 
 
@@ -161,7 +161,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Your Name - Jacqueline Mander
+Your Name - JMander
 
 Project Link: [https://github.com/jmmander/Google-Calendar-Conflict-Detector](https://github.com/+/Google-Calendar-Conflict-Detector)
 
