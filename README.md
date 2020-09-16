@@ -76,12 +76,6 @@ At this time the Conflict Detector is only compatible with Mac OS.
 
 ### Prerequisites
 
-- Python 2
-
-- An iCloud account
-
-- iMessage account
-
 - A Google account and calendar
 
 - Pip
