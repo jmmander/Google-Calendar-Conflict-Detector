@@ -6,13 +6,33 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import subprocess
+import os.path
+import ConfigParser
+
+
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
 
-phoneno = "+13058505472"
-path = "/Users/Jacqueline/PycharmProjects/calendar"
+def setup():
+    noAccounts = raw_input("How many google accounts would you like to be monitored? ")
+    imessage = raw_input("Would you like an iMessage notication? (y/n) ")
+    if imessage.lower() == "y" or imessage.lower() == "yes":
+        phoneno = raw_input(
+            "What phone number is associated with your iMessage account? Please include the + sign followed by your country code ")
+    else:
+        phoneno = ""
+    notification = raw_input("Would you like a notification on your Mac? (y/n) ")
+    path = raw_input("What is the full path for the folder that holds cal.py? ")
+
+    text = "noAccounts =" + noAccounts + "\niMessage =" + imessage + "\nNotification =" + notification + "\nphoneno =" + phoneno + "\npath =" + path
+    f = open("myconfig.txt", "w")
+    f.write(text)
+    f.close()
+
+    return noAccounts, imessage, phoneno, notification,path
+
 
 def getEvents(path):
 
@@ -134,10 +154,10 @@ def createNotication(conflicts):
 
 
 
-def createCron():
+def createCron(path):
     ##create cronjob
     p = subprocess.Popen(
-        ['sh', 'schedule.sh'],
+        ['sh', 'schedule.sh', path],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stdout, stderr = p.communicate()
@@ -148,16 +168,36 @@ def createCron():
         print(stdout)
 
 
-events1 = getEvents('token.pickle')
-events2 = getEvents('token1.pickle')
-events = events1 + events2
-if events:
-    conflicts = checkForConflicts(events)
+eventlist = []
+noAccounts, imessage, phoneno, notification,path = setup()
+
+for num in range(int(noAccounts)):
+    pathno = "token" + str(num) + ".pickle"
+    events = getEvents(pathno)
+    if events:
+        eventlist.append(events)
+print("\n\nChecking tomorrows events...\n")
+if len(eventlist) > 0:
+    all_events = [item for sublist in eventlist for item in sublist]
+else:
+    all_events = None
+if all_events:
+    conflicts = checkForConflicts(all_events)
     if len(conflicts) > 1:
-        sendMessage(conflicts)
-        createNotication(conflicts)
-        createCron()
+        print("Uh oh! Conflicts found!")
+        if imessage.lower() == "y" or imessage.lower() == "yes":
+            print("Sending iMessage...")
+            sendMessage(conflicts)
+        if notification.lower() == "y" or notification.lower() == "yes":
+            print("Creating notification...")
+            createNotication(conflicts)
+    createCron(path)
+    print("Creating cronjob...")
+    print("\n\nAll done! Your conflict detector has been set up and will now automatically run every hour. You will only be notified if you have a conflict! \n\n")
 else:
     print("No conflicts tomorrow")
+    createCron(path)
+    print("Creating cronjob...")
+    print("\n\nAll done! Your conflict detector has been set up and will now automatically run every hour. You will only be notified if you have a conflict! \n\n")
 
 
