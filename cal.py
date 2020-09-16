@@ -12,6 +12,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
 
 phoneno = "+13058505472"
+path = "/Users/Jacqueline/PycharmProjects/calendar"
 
 def getEvents(path):
 
