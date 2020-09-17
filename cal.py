@@ -24,6 +24,7 @@ def setup():
         config = f.readlines()
         f.close()
         if len(config) == 4:
+            print("checking myconfig.txt")
             setupdic = {}
             for line in config:
                 comps = line.split("=")
@@ -221,14 +222,14 @@ if all_events:
         if setupdic["notification"].lower() == "y" or setupdic["notification"].lower() == "yes":
             print("Creating notification...")
             createNotication(conflicts)
-    time.sleep(10)
-    createCron(path)
+    time.sleep(6)
     print("Creating cronjob...")
+    createCron(path)
     print("\n\nAll done! Your conflict detector has been set up and will now automatically run every hour. You will only be notified if you have a conflict! \n\n")
 else:
     print("No conflicts tomorrow")
-    createCron(path)
     print("Creating cronjob...")
+    createCron(path)
     print("\n\nAll done! Your conflict detector has been set up and will now automatically run every hour. You will only be notified if you have a conflict! \n\n")
 
 
