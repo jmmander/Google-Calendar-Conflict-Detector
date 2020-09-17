@@ -6,16 +6,40 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import subprocess
-import os.path
 import ConfigParser
+import os
+import time
 
 
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+path = os.path.dirname(os.path.abspath(__file__))
 
 
 def setup():
+
+    if os.path.isfile('./myconfig.txt'):
+        f = open("myconfig.txt", "r")
+        config = f.readlines()
+        f.close()
+        if len(config) == 4:
+            setupdic = {}
+            for line in config:
+                comps = line.split("=")
+                varname = comps[0]
+                val = comps[1].strip('\n')
+                setupdic[varname] = val
+        else:
+            setupdic = questionAsker()
+    else:
+        setupdic = questionAsker()
+
+    return setupdic
+
+
+def questionAsker():
+    inputdic = {}
     noAccounts = raw_input("How many google accounts would you like to be monitored? ")
     imessage = raw_input("Would you like an iMessage notication? (y/n) ")
     if imessage.lower() == "y" or imessage.lower() == "yes":
@@ -24,14 +48,19 @@ def setup():
     else:
         phoneno = ""
     notification = raw_input("Would you like a notification on your Mac? (y/n) ")
-    path = raw_input("What is the full path for the folder that holds cal.py? ")
-
-    text = "noAccounts =" + noAccounts + "\niMessage =" + imessage + "\nNotification =" + notification + "\nphoneno =" + phoneno + "\npath =" + path
+    text = "noAccounts=" + noAccounts + "\nimessage=" + imessage + "\nnotification=" + notification + "\nphoneno=" + phoneno + "\n"
     f = open("myconfig.txt", "w")
     f.write(text)
+    print("wrote to myconfig.txt")
     f.close()
 
-    return noAccounts, imessage, phoneno, notification,path
+    inputdic["noAccounts"] = noAccounts
+    inputdic["imessage"] = imessage
+    inputdic["phoneno"] = phoneno
+    inputdic["notification"] = notification
+
+    return inputdic
+
 
 
 def getEvents(path):
@@ -169,11 +198,12 @@ def createCron(path):
 
 
 eventlist = []
-noAccounts, imessage, phoneno, notification,path = setup()
+setupdic = setup()
+print(setupdic)
 
-for num in range(int(noAccounts)):
-    pathno = "token" + str(num) + ".pickle"
-    events = getEvents(pathno)
+for num in range(int(setupdic["noAccounts"])):
+    tokenno = "token" + str(num) + ".pickle"
+    events = getEvents(tokenno)
     if events:
         eventlist.append(events)
 print("\n\nChecking tomorrows events...\n")
@@ -185,12 +215,13 @@ if all_events:
     conflicts = checkForConflicts(all_events)
     if len(conflicts) > 1:
         print("Uh oh! Conflicts found!")
-        if imessage.lower() == "y" or imessage.lower() == "yes":
+        if setupdic["imessage"].lower() == "y" or setupdic["imessage"].lower() == "yes":
             print("Sending iMessage...")
             sendMessage(conflicts)
-        if notification.lower() == "y" or notification.lower() == "yes":
+        if setupdic["notification"].lower() == "y" or setupdic["notification"].lower() == "yes":
             print("Creating notification...")
             createNotication(conflicts)
+    time.sleep(10)
     createCron(path)
     print("Creating cronjob...")
     print("\n\nAll done! Your conflict detector has been set up and will now automatically run every hour. You will only be notified if you have a conflict! \n\n")
