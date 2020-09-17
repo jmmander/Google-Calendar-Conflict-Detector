@@ -6,7 +6,6 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import subprocess
-import ConfigParser
 import os
 import time
 
@@ -41,14 +40,13 @@ def setup():
 
 def questionAsker():
     inputdic = {}
-    noAccounts = raw_input("How many google accounts would you like to be monitored? ")
-    imessage = raw_input("Would you like an iMessage notication? (y/n) ")
+    noAccounts = input("How many google accounts would you like to be monitored? ")
+    imessage = input("Would you like an iMessage notication? (y/n) ")
     if imessage.lower() == "y" or imessage.lower() == "yes":
-        phoneno = raw_input(
-            "What phone number is associated with your iMessage account? Please include the + sign followed by your country code ")
+        phoneno = input("What phone number is associated with your iMessage account? Please include the + sign followed by your country code ")
     else:
         phoneno = ""
-    notification = raw_input("Would you like a notification on your Mac? (y/n) ")
+    notification = input("Would you like a notification on your Mac? (y/n) ")
     text = "noAccounts=" + noAccounts + "\nimessage=" + imessage + "\nnotification=" + notification + "\nphoneno=" + phoneno + "\n"
     f = open("myconfig.txt", "w")
     f.write(text)
@@ -93,9 +91,9 @@ def getEvents(path):
 
     tomorrow = datetime.datetime.today() + datetime.timedelta(days=1)
     tomorrow = tomorrow.replace(hour=0, minute=0, second=0)
-    day_after = tomorrow + datetime.timedelta(days=1)
+    days_after = tomorrow + datetime.timedelta(days=7)
     iso_start = tomorrow.isoformat() + "Z"
-    iso_end = day_after.isoformat() + "Z"
+    iso_end = days_after.isoformat() + "Z"
 
 
     events_result = service.events().list(calendarId='primary', timeMin=iso_start,
@@ -119,35 +117,44 @@ def checkForConflicts(events):
             tup = (name, (start, end))
             all.append(tup)
 
-        conflicts = ["Conflicts for tomorrow: \n\n", ]
+        conflicts = ["Conflicts: \n\n", ]
         i=0
+        if "+" in all[0][1][1]:
+            timediff = all[0][1][1].split("+")[1]
+            print(timediff)
+            timediffhours = 24 - int(timediff.split(":")[0])
+            print(timediffhours)
+            timediffmin = int(timediff.split(":")[1])
+            print(timediffmin)
+            toadd = datetime.timedelta(hours=timediffhours, minutes=timediffmin)
+        else:
+            toadd = datetime.timedelta(hours=0)
         for element in all:
-            start_time = element[1][0]
-            end_time = element[1][1]
+            start = datetime.datetime.fromisoformat(element[1][0]) - toadd
+            end = datetime.datetime.fromisoformat(element[1][1]) - toadd
+            startdate = start.date()
+            starttime = start.time()
+            enddate = end.date()
+            endtime = end.time()
             name = element[0]
             i=i+1
             for other_event in all[i:]:
-                other_start = other_event[1][0]
-                other_end = other_event[1][1]
-                other_name = other_event[0]
-                if end_time <= other_start and start_time <= other_end:
-                    pass
-                else:
-                    if start_time <= other_start and end_time >= other_end:
-                        conflict = (other_start,other_end)
-                    elif start_time <= other_start and end_time <= other_end:
-                        conflict = (other_start, end_time)
-                    elif start_time >= other_start and end_time >= other_end:
-                        conflict = (start_time, other_end)
-                    else:
-                        conflict = (start_time, end_time)
-                    line = name + " and " + other_name + " share a conflict\n"
-
-                    conflicts.append(line)
+                otherstart = datetime.datetime.fromisoformat(other_event[1][0]) - toadd
+                otherend = datetime.datetime.fromisoformat(other_event[1][1]) - toadd
+                otherstartdate = otherstart.date()
+                otherstarttime = otherstart.time()
+                otherenddate = otherend.date()
+                otherendtime = otherend.time()
+                othername = other_event[0]
+                if startdate == otherstartdate and enddate == otherenddate:
+                    overlap = max(starttime, otherstarttime) < min(endtime, otherendtime)
+                    if overlap:
+                        line = startdate.strftime("%m/%d/%Y") + ": " + name + " and " + othername + " share a conflict\n"
+                        conflicts.append(line)
         return conflicts
 
 
-def sendMessage(conflicts):
+def sendMessage(conflicts, phoneno):
     ##send imessage
 
     msg = "".join(conflicts)
@@ -218,7 +225,7 @@ if all_events:
         print("Uh oh! Conflicts found!")
         if setupdic["imessage"].lower() == "y" or setupdic["imessage"].lower() == "yes":
             print("Sending iMessage...")
-            sendMessage(conflicts)
+            sendMessage(conflicts, setupdic["phoneno"])
         if setupdic["notification"].lower() == "y" or setupdic["notification"].lower() == "yes":
             print("Creating notification...")
             createNotication(conflicts)
