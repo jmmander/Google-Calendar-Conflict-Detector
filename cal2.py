@@ -31,22 +31,22 @@ def setup():
                 val = comps[1].strip('\n')
                 setupdic[varname] = val
         else:
-            setupdic = question_asker()
+            setupdic = questionAsker()
     else:
-        setupdic = question_asker()
+        setupdic = questionAsker()
 
     return setupdic
 
 
-def question_asker():
+def questionAsker():
     inputdic = {}
-    noAccounts = input("How many google accounts would you like to be monitored? ")
-    imessage = input("Would you like an iMessage notication? (y/n) ")
+    noAccounts = raw_input("How many google accounts would you like to be monitored? ")
+    imessage = raw_input("Would you like an iMessage notication? (y/n) ")
     if imessage.lower() == "y" or imessage.lower() == "yes":
-        phoneno = input("What phone number is associated with your iMessage account? Please include the + sign followed by your country code ")
+        phoneno = raw_input("What phone number is associated with your iMessage account? Please include the + sign followed by your country code ")
     else:
         phoneno = ""
-    notification = input("Would you like a notification on your Mac? (y/n) ")
+    notification = raw_input("Would you like a notification on your Mac? (y/n) ")
     text = "noAccounts=" + noAccounts + "\nimessage=" + imessage + "\nnotification=" + notification + "\nphoneno=" + phoneno + "\n"
     f = open("myconfig.txt", "w")
     f.write(text)
@@ -104,6 +104,15 @@ def getEvents(path):
 
     return events
 
+def iso_to_datetime(iso):
+    iso_split = iso.split("T")
+    iso_date = iso_split[0]
+    date_split = iso_date.split("-")
+    iso_time = iso_split[1]
+    time_split = iso_time.split(":")[:2]
+    date_time_obj = datetime.datetime(int(date_split[0]), int(date_split[1]), int(date_split[2]), int(time_split[0]), int(time_split[1], 0))
+
+    return date_time_obj
 
 def check_for_conflicts(events):
     all = []
@@ -116,42 +125,34 @@ def check_for_conflicts(events):
             end = event['end'].get('dateTime', event['end'].get('date'))
             tup = (name, (start, end))
             all.append(tup)
-
         conflicts = ["Conflicts: \n\n", ]
         i=0
         if "+" in all[0][1][1]:
-            timediff = all[0][1][1].split("+")[1]
-            timediffhours = 24 - int(timediff.split(":")[0])
-            timediffmin = int(timediff.split(":")[1])
-            timediffdelta = datetime.timedelta(hours=timediffhours, minutes=timediffmin)
+            time_diff = all[0][1][1].split("+")[1]
+            time_diff_hours = 24 - int(time_diff.split(":")[0])
+            time_diff_min = int(time_diff.split(":")[1])
+            time_diff_delta = datetime.timedelta(hours=time_diff_hours, minutes=time_diff_min)
         else:
-            timediffdelta = datetime.timedelta(hours=0)
+            time_diff_delta = datetime.timedelta(hours=0)
         for element in all:
-            start = datetime.datetime.fromisoformat(element[1][0]) - timediffdelta
-            end = datetime.datetime.fromisoformat(element[1][1]) - timediffdelta
-            startdate = start.date()
-            starttime = start.time()
-            enddate = end.date()
-            endtime = end.time()
+            start = iso_to_datetime(element[1][0]) - time_diff_delta
+            end = iso_to_datetime(element[1][1]) - time_diff_delta
             name = element[0]
             i=i+1
             for other_event in all[i:]:
-                otherstart = datetime.datetime.fromisoformat(other_event[1][0]) - timediffdelta
-                otherend = datetime.datetime.fromisoformat(other_event[1][1]) - timediffdelta
-                otherstartdate = otherstart.date()
-                otherstarttime = otherstart.time()
-                otherenddate = otherend.date()
-                otherendtime = otherend.time()
-                othername = other_event[0]
-                if startdate == otherstartdate and enddate == otherenddate:
-                    overlap = max(starttime, otherstarttime) < min(endtime, otherendtime)
+                other_start = iso_to_datetime(other_event[1][0]) - time_diff_delta
+                other_end = iso_to_datetime(other_event[1][1]) - time_diff_delta
+                other_name = other_event[0]
+                if start.date() == other_start.date() and end.date() == other_end.date():
+                    overlap = max(start.time(), other_start.time()) < min(end.time(), other_end.time())
                     if overlap:
-                        line = startdate.strftime("%m/%d/%Y") + ": " + name + " and " + othername + " share a conflict\n"
+                        date_str = start.strftime("%m/%d")
+                        line = date_str + ": " + name + " and " + other_name + " share a conflict\n"
                         conflicts.append(line)
         return conflicts
 
 
-def send_message(conflicts, phoneno):
+def sendMessage(conflicts, phoneno):
     ##send imessage
 
     msg = "".join(conflicts)
@@ -170,7 +171,7 @@ def send_message(conflicts, phoneno):
         print(stdout)
 
 
-def create_notication(conflicts):
+def createNotication(conflicts):
     ##create notification
 
     script = "notification.scpt"
@@ -187,7 +188,8 @@ def create_notication(conflicts):
         print(stdout)
 
 
-def create_cron(path):
+
+def createCron(path):
     ##create cronjob
     p = subprocess.Popen(
         ['sh', 'schedule.sh', path],
@@ -202,7 +204,6 @@ def create_cron(path):
 
 
 def run():
-
     eventlist = []
     setupdic = setup()
 
@@ -222,18 +223,19 @@ def run():
             print("Uh oh! Conflicts found!")
             if setupdic["imessage"].lower() == "y" or setupdic["imessage"].lower() == "yes":
                 print("Sending iMessage...")
-                send_message(conflicts, setupdic["phoneno"])
+                sendMessage(conflicts, setupdic["phoneno"])
             if setupdic["notification"].lower() == "y" or setupdic["notification"].lower() == "yes":
                 print("Creating notification...")
-                create_notication(conflicts)
+                createNotication(conflicts)
         time.sleep(6)
         print("Creating cronjob...")
-        create_cron(path)
+        createCron(path)
         print("\n\nAll done! Your conflict detector has been set up and will now automatically run every hour. You will only be notified if you have a conflict! \n\n")
     else:
         print("No conflicts tomorrow")
         print("Creating cronjob...")
-        create_cron(path)
-        print("\n\nAll done! Your conflict detector has been set up and will now automatically run every hour. You will only be notified if you have a conflict")
+        createCron(path)
+        print("\n\nAll done! Your conflict detector has been set up and will now automatically run every hour. You will only be notified if you have a conflict! \n\n")
+
 
 run()
